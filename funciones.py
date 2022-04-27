@@ -336,5 +336,6 @@ def scrollSuave(driver):
 
 def scrollArriba(driver):
     driver.execute_script("window.scrollBy(0,0)","")
+    
 # def scrollIntoView:
 #     element.scrollIntoView({block: "end"});
