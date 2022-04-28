@@ -112,11 +112,15 @@ def encontrarElemento(driver, nombreElemento):
         )
         return linkCUIJ
     if (nombreElemento == "botonPasarPagina"):
-        claseBotonPasarPagina = WebDriverWait(driver, 30).until(
+        #botonPasarPagina = driver.wait.until(
+        #    EC.element_to_be_clickable(
+        #        (By.XPATH, '//app-paginacion//li[@class="page-item next-item enabled"]')))
+        botonPasarPagina = WebDriverWait(driver,20).until(
             EC.presence_of_element_located(
-                (By.XPATH, '//app-paginacion//li[@class="page-item next-item enabled"]'))
+                (By.XPATH,'//app-paginacion//li[@class="page-item next-item enabled"]')
+            )
         )
-        return claseBotonPasarPagina
+        return botonPasarPagina
     if (nombreElemento == "botonDesplegar"):
         botonDesplegar = WebDriverWait(driver, 30).until(
             EC.presence_of_element_located(
@@ -140,7 +144,6 @@ def navegar(driver):
 
 # Extrae el segundo archivo (que está en otra página)
 def extraerSegundoAdjunto(driver):
-    sleep(5)
     print("EXTRAYENDO EL SEGUNDO ARCHIVO")
     fecha = driver.find_element_by_xpath("//table//tbody//td[1]/span/span").text
     print("FECHA: ", fecha)
@@ -184,7 +187,7 @@ def cargarCUIJ(driver, cuijs):
     # CUIJ con 39 registros (con paginación): 21-26361795-6. Adjuntos: 21 A1 - 19 A2
     # CUIJ con 10 registros (sin paginación): 21-26362099-9. Adjuntos: 5 A1 - 5 A2
     # CUIJ con 54 registros (con paginación): 21-05016495-8. Adjuntos: 36 A1 - 
-    textfieldCUIJ.send_keys("21-26362099-9")
+    textfieldCUIJ.send_keys("21-26361795-6")
     botonEfectuarBusqueda = encontrarElemento(driver, "efectuarBusqueda")
     botonEfectuarBusqueda.click()
     linkCUIJ = encontrarElemento(driver, "linkCUIJ")
@@ -206,12 +209,15 @@ def extraerInformacion(driver):
     filas = driver.find_elements_by_xpath("//table/tbody/tr")
     numeroFilas = len(filas)
     leerInformacionExpediente(driver, numeroFilas)
-    pasarPagina(driver)
+    botonPasarPagina = encontrarElemento(driver, "botonPasarPagina")
+    if (botonPasarPagina):
+        pasarPagina(driver)
+        extraerInformacion(driver)
 
 # Toma la información correspondiente a los movimientos del expediente
 def leerInformacionExpediente(driver, numeroFilas):
     print("Trayendo información (5a)")
-    sleep(15)
+    sleep(10)
 
     # xpathBase = "//div[@class='table-responsive mt-2']//tbody/tr[i]"
 
@@ -282,12 +288,15 @@ def leerInformacionExpediente(driver, numeroFilas):
 # Evalúa la necesidad (o no) de pasar página
 def pasarPagina(driver):
     print("Pasando página (5b)")
-    scrollSuave(driver)
     try:
+        scroll(driver)
+        scrollSuave(driver)
+        scroll(driver)
+        scrollSuave(driver)
         botonPasarPagina = encontrarElemento(driver, "botonPasarPagina")
         botonPasarPagina.click()
+        print("Fin del try - pasa página y vuelve a traer información")
         sleep(5)
-        extraerInformacion(driver)
     except:
         print("NO se ha encontrado otra página.")
         pass
@@ -307,16 +316,12 @@ def identificarMovimiento(movimiento):
     encontrado = 15
 
     if (result1 == encontrado):
-        print("Entra al primer IF")
         mov = "Escrito"
     if (result2 == encontrado):
-        print("Entra al segundo IF")
         mov = "Resolución/Sentencia"
     if (result3 == encontrado):
-        print("Entra al tercer IF")
         mov = "Trámite"
     if (result4 == encontrado):
-        print("Entra al cuarto IF")
         mov = "Notificaciones con firma digital"
     return mov
 
