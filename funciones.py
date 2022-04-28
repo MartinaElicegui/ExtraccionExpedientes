@@ -14,7 +14,7 @@ import re
 
 # Genera una instancia del navegador automatizado
 def generarDriver():
-    print("Generando el driver (1)")
+    # print("Generando el driver (1)")
     rutaDriver = os.path.join(os.getcwd(), "chromedriver")
     driver = webdriver.Chrome(rutaDriver, chrome_options=Options())
     Options().add_argument("user-agent=Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/59.0.3071.115 Safari/537.36")
@@ -22,7 +22,7 @@ def generarDriver():
 
 # Loguea al profesional dentro del SISFE
 def loguearProfesional(driver):
-    print("Función loguear profesional (2)")
+    # print("Función loguear profesional (2)")
     infoLogueo = leerInformacionLogin()
     ingresarAurl(driver)
     cargarDatosLogin(driver, infoLogueo)
@@ -31,7 +31,7 @@ def loguearProfesional(driver):
 
 # Lee la información necesaria para loguearse de un archivo csv
 def leerInformacionLogin():
-    print("Leyendo la información del abogado para el login (2a)")
+    # print("Leyendo la información del abogado para el login (2a)")
     informacion = open("datos.csv", "r", encoding="latin1")
 
     linea = informacion.readline()
@@ -46,12 +46,12 @@ def leerInformacionLogin():
 
 # Ingresa a la página del login
 def ingresarAurl(driver):
-    print("Entrando en la página para loguearse (2b)")
+    # print("Entrando en la página para loguearse (2b)")
     driver.get('https://sisfe.justiciasantafe.gov.ar/login-matriculado')
 
 # Carga la información en los elementos HTML del login
 def cargarDatosLogin(driver, infoLogueo):
-    print("Cargando datos del abogado en login (2c)")
+    # print("Cargando datos del abogado en login (2c)")
     droplistCircunscripcion = encontrarElemento(driver, "circunscripcion")
     droplistCircunscripcion.send_keys(infoLogueo[0])
     droplistColegio = encontrarElemento(driver, "colegio")
@@ -63,7 +63,7 @@ def cargarDatosLogin(driver, infoLogueo):
 
 # Busca elementos e introduce esperas para reducir errores
 def encontrarElemento(driver, nombreElemento):
-    print("Buscando elemento (2ci): ", nombreElemento)
+    # print("Buscando elemento (2ci): ", nombreElemento)
     if (nombreElemento == "circunscripcion"):
         droplistCircunscripcion = WebDriverWait(driver, 10).until(
             EC.presence_of_element_located(
@@ -131,8 +131,8 @@ def encontrarElemento(driver, nombreElemento):
 # Navega a través del sitio para llegar a la página deseada
 def navegar(driver):
     llamador = inspect.stack()[1][3]
-    print("LO LLAMA LA FUNCIÓN: ")
-    print(llamador)
+    #print("LO LLAMA LA FUNCIÓN: ")
+    #print(llamador)
 
     if (llamador == "loguearProfesional"):
         botonIngresar = encontrarElemento(driver, "botonIngresar")
@@ -144,7 +144,6 @@ def navegar(driver):
 
 # Extrae el segundo archivo (que está en otra página)
 def extraerSegundoAdjunto(driver):
-    print("EXTRAYENDO EL SEGUNDO ARCHIVO")
     fecha = driver.find_element_by_xpath("//table//tbody//td[1]/span/span").text
     print("FECHA: ", fecha)
     textoAdjunto = driver.find_element_by_xpath("//table//tbody//td[2]/span/span").text
@@ -163,7 +162,7 @@ def paginaAnterior(driver):
 
 # Busca el expediente dentro del SISFE por CUIJ
 def buscarExpediente(driver):
-    print("Función buscar expediente (4)")
+    #print("Función buscar expediente (4)")
     cuijs = leerCUIJ()
     cargarCUIJ(driver, cuijs)
     navegar(driver)
@@ -171,7 +170,7 @@ def buscarExpediente(driver):
 # Lee el archivo y agrupa los CUIJS a buscar
 def leerCUIJ():
     cuijs = []
-    print("Leyendo los CUIJs (4a)")
+    # print("Leyendo los CUIJs (4a)")
     listaCUIJs = open("cuijs.csv", "r", encoding="latin1")
     for fila in listaCUIJs:
         print(fila)
@@ -181,7 +180,7 @@ def leerCUIJ():
 # Carga el CUIJ y efectúa la búsqueda
 def cargarCUIJ(driver, cuijs):
     scrollArriba(driver)
-    print("Cargando CUIJ (4b)")
+    # print("Cargando CUIJ (4b)")
     # desplegarCuadroBusqueda(driver)
     textfieldCUIJ = encontrarElemento(driver, "CUIJ")
     # CUIJ con 39 registros (con paginación): 21-26361795-6. Adjuntos: 21 A1 - 19 A2
@@ -212,11 +211,10 @@ def extraerInformacion(driver):
     botonPasarPagina = encontrarElemento(driver, "botonPasarPagina")
     if (botonPasarPagina):
         pasarPagina(driver)
-        extraerInformacion(driver)
 
 # Toma la información correspondiente a los movimientos del expediente
 def leerInformacionExpediente(driver, numeroFilas):
-    print("Trayendo información (5a)")
+    # print("Trayendo información (5a)")
     sleep(10)
 
     # xpathBase = "//div[@class='table-responsive mt-2']//tbody/tr[i]"
@@ -263,7 +261,6 @@ def leerInformacionExpediente(driver, numeroFilas):
             scrollSuave(driver)
             adjunto1 = driver.find_element(
                 By.XPATH, "//div[@class='table-responsive mt-2']//tbody/tr["+str(i)+"]/td[6]//button/i")
-            print("Descargando archivo 1")
             adjunto1.click()
             sleep(5)
         except:
@@ -274,7 +271,6 @@ def leerInformacionExpediente(driver, numeroFilas):
             scrollSuave(driver)
             adjunto2 = driver.find_element(
                 By.XPATH, "//div[@class='table-responsive mt-2']//tbody/tr["+str(i)+"]/td[8]//button/i")
-            print("Descargando archivo 2")
             adjunto2.click()
             sleep(5)
             
@@ -287,7 +283,7 @@ def leerInformacionExpediente(driver, numeroFilas):
 
 # Evalúa la necesidad (o no) de pasar página
 def pasarPagina(driver):
-    print("Pasando página (5b)")
+    # print("Pasando página (5b)")
     try:
         scroll(driver)
         scrollSuave(driver)
@@ -303,15 +299,11 @@ def pasarPagina(driver):
 
 # Utiliza la lista de referencias para interpretar el ícono encontrado
 def identificarMovimiento(movimiento):
-    print("Identificando movimiento. Clase: ",movimiento)
+    # print("Identificando movimiento. Clase: ",movimiento)
     result1 = movimiento.find("file")
     result2 = movimiento.find("gavel")
     result3 = movimiento.find("shield")
     result4 = movimiento.find("user-check")
-    print(result1)
-    print(result2)
-    print(result3)
-    print(result4)
 
     encontrado = 15
 
@@ -327,13 +319,12 @@ def identificarMovimiento(movimiento):
 
 # Guarda la información recolectada
 def guardarInformacion(tipoMov1, tipoMov2, fecha, novedad, observacion):
-    print("Guardando información (5c)")
+    # print("Guardando información (5c)")
     with open('datosExtraidos.csv', 'a', newline='') as f:
         writer = csv.writer(f, delimiter = ',', lineterminator='\n')
         writer.writerow([tipoMov1, tipoMov2, fecha, novedad, observacion])
 
 def scroll(driver):
-    print("scrolleando")
     driver.execute_script("window.scrollTo(0, document.body.scrollHeight)")
 
 def scrollSuave(driver):
