@@ -127,31 +127,59 @@ def encontrarElemento(driver, nombreElemento):
                 (By.XPATH, '//form[@class="ng-valid ng-dirty ng-touched"]//div[@class="card-header"]//i'))
         )
         return botonDesplegar
+    if (nombreElemento == "fecha"):
+        fecha = WebDriverWait(driver, 30).until(
+            EC.presence_of_element_located(
+                (By.XPATH, '//table//tbody//td[1]/span/span').text)
+        )
+        return fecha
+    if (nombreElemento == "textoAdjunto"):
+        textoAdjunto = WebDriverWait(driver, 30).until(
+            EC.presence_of_element_located(
+                (By.XPATH, '//table//tbody//td[2]/span/span'.text)
+            )
+        )
+        return textoAdjunto
+    if (nombreElemento == "archivoAdjunto"):
+        archivoAdjunto = WebDriverWait(driver, 30).until(
+            EC.presence_of_element_located(
+                (By.XPATH, '//table//tbody//td[4]/span/button/i')
+            )
+        )
+        print("SE ENCONTRÓ EL ADJUNTO")
+        return archivoAdjunto
+    
 
 # Navega a través del sitio para llegar a la página deseada
 def navegar(driver):
     llamador = inspect.stack()[1][3]
-    #print("LO LLAMA LA FUNCIÓN: ")
-    #print(llamador)
+    print("LO LLAMA LA FUNCIÓN: ")
+    print(llamador)
 
     if (llamador == "loguearProfesional"):
         botonIngresar = encontrarElemento(driver, "botonIngresar")
         botonIngresar.click()
     if (llamador == "leerInformacionExpediente"):
         sleep(2)
+        print("Entró por la función 'leerInformaciónExpediente'")
         resultado = extraerSegundoAdjunto(driver)
         return resultado 
 
 # Extrae el segundo archivo (que está en otra página)
 def extraerSegundoAdjunto(driver):
-    fecha = driver.find_element_by_xpath("//table//tbody//td[1]/span/span").text
+    print("Entrando en la función 'extraerSegundoAdjunto'")
+    # fecha = driver.find_element_by_xpath("//table//tbody//td[1]/span/span").text
+    fecha = encontrarElemento(driver, "fecha")
     print("FECHA: ", fecha)
-    textoAdjunto = driver.find_element_by_xpath("//table//tbody//td[2]/span/span").text
+    # textoAdjunto = driver.find_element_by_xpath("//table//tbody//td[2]/span/span").text
+    textoAdjunto = encontrarElemento(driver,"textoAdjunto")
     print("TEXTO ADJUNTO: ", textoAdjunto)
     # archivoAdjunto = driver.find_element_by_xpath("//table//tbody//td[4]/span/button/i")
     # archivoAdjunto = driver.wait.until(EC.element_to_be_clickable((By.XPATH, "//table//tbody//td[4]/span/button")))
-    archivoAdjunto = driver.find_element_by_xpath("//table//tbody//td[4]/span/button/i")
+    # archivoAdjunto = driver.find_element_by_xpath("//table//tbody//td[4]/span/button/i")
+    archivoAdjunto = encontrarElemento(driver, "archivoAdjunto")
     archivoAdjunto.click()
+    print("SUPUESTAMENTE YA LE HIZO CLICK")
     sleep(2)
     paginaAnterior(driver)
     return [fecha, textoAdjunto]
@@ -222,6 +250,7 @@ def leerInformacionExpediente(driver, numeroFilas):
     for i in range(1,numeroFilas+1):
         print("Vuelta número: ", i)
         try:
+            tipoMovimiento1 = encontrarElemento(driver, "tipoMovimiento1")
             tipoMovimiento1 = driver.find_element(
                 # By.XPATH, "//div[@class='table-responsive mt-2']//tbody/tr["+str(numeroFilas)+"]//td[1]//i").get_attribute('class')
                 By.XPATH, "//div[@class='table-responsive mt-2']//tbody/tr["+str(i)+"]//td[1]//i").get_attribute('class')
@@ -264,7 +293,6 @@ def leerInformacionExpediente(driver, numeroFilas):
             adjunto1.click()
             sleep(5)
         except:
-            print("NO SE HA ENCONTRADO EL ADJUNTO 1")
             pass
         try:
             scrollSuave(driver)
@@ -275,9 +303,7 @@ def leerInformacionExpediente(driver, numeroFilas):
             sleep(5)
             
             textoYfechaAdjunto = navegar(driver)
-            print(textoYfechaAdjunto)
         except:
-            print("NO SE HA ENCONTRADO EL ADJUNTO 2")
             pass
         guardarInformacion(tipoMov1, tipoMov2, fecha, novedad, observacion)
 
