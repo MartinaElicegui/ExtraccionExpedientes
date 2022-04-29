@@ -161,7 +161,6 @@ def navegar(driver):
         botonIngresar.click()
     if (llamador == "leerInformacionExpediente"):
         sleep(2)
-        print("Entró por la función 'leerInformaciónExpediente'")
         resultado = extraerSegundoAdjunto(driver)
         return resultado 
 
@@ -258,6 +257,7 @@ def leerInformacionExpediente(driver, numeroFilas):
             print(tipoMov1)
         except:
             tipoMov1 = "vacío"
+            print("Vacío")
         try:
             tipoMovimiento2 = driver.find_element(
                 By.XPATH, "//div[@class='table-responsive mt-2']//tbody/tr["+str(i)+"]/td[2]//i").get_attribute('class')
