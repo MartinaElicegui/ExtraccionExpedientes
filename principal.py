@@ -9,8 +9,11 @@ def main():
     # A su vez, cuando entra en la función cargarCUIJ(driver, cuijs) llama a extraerInformación(driver) 
     # Dentro de la función navegar(driver) llama a extraerSegundoAdjunto(driver) (SÓLO SI EL ARCHIVO EXISTE)
     buscarExpediente(driver)
+    contarArchivosADescargar(driver)
+    contarArchivosDescargados()
     msgbox("Presione una tecla para terminar")
     
 if __name__ == "__main__":
     sys.exit(main())
+
 

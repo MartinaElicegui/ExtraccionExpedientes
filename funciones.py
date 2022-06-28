@@ -18,7 +18,6 @@ import re
 # Argumentos: -
 # Devuelve: driver
 def generarDriver():
-    print("Generando el driver (1)")
     rutaDriver = os.path.join(os.getcwd(), "chromedriver")
     driver = webdriver.Chrome(rutaDriver, chrome_options=Options())
     Options().add_argument("user-agent=Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/59.0.3071.115 Safari/537.36")
@@ -29,7 +28,6 @@ def generarDriver():
 # Devuelve: -
 def loguearProfesional(driver):
     driver.maximize_window()
-    print("Función loguear profesional (2)")
     infoLogueo = leerInformacionLogin()
     ingresarAurl(driver)
     cargarDatosLogin(driver, infoLogueo)
@@ -40,7 +38,6 @@ def loguearProfesional(driver):
 # Argumentos: -
 # Devuelve: [circunscripcion, colegio, matricula, contraseña] -> una lista de 4 strings
 def leerInformacionLogin():
-    print("Leyendo la información del abogado para el login (2a)")
     informacion = open("datos.csv", "r", encoding="latin1")
 
     linea = informacion.readline()
@@ -57,14 +54,12 @@ def leerInformacionLogin():
 # Argumentos: driver
 # Devuelve: -
 def ingresarAurl(driver):
-    print("Entrando en la página para loguearse (2b)")
     driver.get('https://sisfe.justiciasantafe.gov.ar/login-matriculado')
 
 # Carga la información en los elementos HTML del login
 # Argumentos: driver - infoLogueo (la lista de 4 strings que devuelve la función "leerInformacionLogin()")
 # Devuelve: -
 def cargarDatosLogin(driver, infoLogueo):
-    print("Cargando datos del abogado en login (2c)")
     droplistCircunscripcion = encontrarElemento(driver, "circunscripcion")
     droplistCircunscripcion.send_keys(infoLogueo[0])
     droplistColegio = encontrarElemento(driver, "colegio")
@@ -78,7 +73,6 @@ def cargarDatosLogin(driver, infoLogueo):
 # Argumentos: driver - nombreElemento (string con el nombre del elemento a buscar)
 # Devuelve: elemento (html)
 def encontrarElemento(driver, nombreElemento):
-    print("Buscando elemento (2ci): ", nombreElemento)
     if (nombreElemento == "circunscripcion"):
         droplistCircunscripcion = WebDriverWait(driver, 10).until(
             EC.presence_of_element_located(
@@ -127,9 +121,13 @@ def encontrarElemento(driver, nombreElemento):
         )
         return linkCUIJ
     if (nombreElemento == "botonPasarPagina"):
-        botonPasarPagina = driver.find_element(
-                By.XPATH, '//li[contains(@class, "page-item next-item")]'
-            )
+        # botonPasarPagina = driver.find_element(
+        #         By.XPATH, '//li[contains(@class, "page-item next-item")]'
+        #     )
+        botonPasarPagina = WebDriverWait(driver, 20).until(
+            EC.element_to_be_clickable(
+                (By.XPATH, '//li[contains(@class, "page-item next-item")]'))
+        )
         return botonPasarPagina
     if (nombreElemento == "botonDesplegar"):
         botonDesplegar = WebDriverWait(driver, 30).until(
@@ -144,35 +142,35 @@ def encontrarElemento(driver, nombreElemento):
 #           si lo llama la función leerInformaciónExpediente, [fecha, textoAdjunto] (la lista de dos elementos que devuelve la función "extraerSegundoAdjunto")
 def navegar(driver):
     llamador = inspect.stack()[1][3]
-    print("LO LLAMA LA FUNCIÓN: ")
-    print(llamador)
 
     if (llamador == "loguearProfesional"):
         botonIngresar = encontrarElemento(driver, "botonIngresar")
         botonIngresar.click()
     if (llamador == "leerInformacionExpediente"):
-        sleep(2)
+        #sleep(2)
         resultado = extraerSegundoAdjunto(driver)
-        print("El resultado es del tipo: ", type(resultado))
         return resultado 
 
 # Extrae el segundo archivo (que está en otra página)
 # Argumentos: driver
 # Devuelve: [fecha, textoAdjunto] -> una lista de dos elementos tipo string
 def extraerSegundoAdjunto(driver):
-    sleep(1)
-    print("EXTRAYENDO EL SEGUNDO ARCHIVO")
+    #sleep(1)
     fecha = driver.find_element_by_xpath("//table//tbody//td[1]/span/span").text
-    print("FECHA: ", fecha)
-    print("TIPO DE DATO FECHA: ", type(fecha))
+    #print("FECHA: ", fecha)
+    #print("TIPO DE DATO FECHA: ", type(fecha))
     textoAdjunto = driver.find_element_by_xpath("//table//tbody//td[2]/span/span").text
-    print("TEXTO ADJUNTO: ", textoAdjunto)
-    print("TIPO DE TEXTO ADJUNTO: ", type(textoAdjunto))
+    #print("TEXTO ADJUNTO: ", textoAdjunto)
+    #print("TIPO DE TEXTO ADJUNTO: ", type(textoAdjunto))
     # archivoAdjunto = driver.find_element_by_xpath("//table//tbody//td[4]/span/button/i")
     # archivoAdjunto = driver.wait.until(EC.element_to_be_clickable((By.XPATH, "//table//tbody//td[4]/span/button")))
-    archivoAdjunto = driver.find_element_by_xpath("//table//tbody//td[4]/span/button/i")
+    # archivoAdjunto = driver.find_element_by_xpath("//table//tbody//td[4]/span/button/i")
+    archivoAdjunto = WebDriverWait(driver, 30).until(
+            EC.element_to_be_clickable(
+                (By.XPATH, '//table//tbody//td[4]/span/button/i'))
+        )
     archivoAdjunto.click()
-    sleep(2)
+    #sleep(3)
     paginaAnterior(driver)
     return [fecha, textoAdjunto]
 
@@ -187,7 +185,6 @@ def paginaAnterior(driver):
 # Argumentos: driver
 # Devuelve: -
 def buscarExpediente(driver):
-    print("Función buscar expediente (4)")
     cuijs = leerCUIJ()
     cargarCUIJ(driver, cuijs)
     navegar(driver)
@@ -197,28 +194,22 @@ def buscarExpediente(driver):
 # Devuelve: class '_io.TextIOWrapper' de cuijs
 def leerCUIJ():
     cuijs = []
-    print("Leyendo los CUIJs (4a)")
     listaCUIJs = open("cuijs.csv", "r", encoding="latin1")
     for fila in listaCUIJs:
-        print(fila)
-        print("Este elemento es de tipo: ", type(fila))
         cuijs.append(fila)
-    print("LA LISTA ES DE TIPO: ", type(listaCUIJs))
     return cuijs
 
 # Carga el CUIJ y efectúa la búsqueda
 # Argumentos: driver, cuijs (lista de strings devuelta por la función "leerCUIJ()")
 # Devuelve: -
-def cargarCUIJ(driver, cuijs):
-    print("EL CONJUNTO DE CUIJS ES DE TIPO: ", type(cuijs)) 
+def cargarCUIJ(driver, cuijs): 
     scrollArriba(driver)
-    print("Cargando CUIJ (4b)")
     # desplegarCuadroBusqueda(driver)
     textfieldCUIJ = encontrarElemento(driver, "CUIJ")
-    # CUIJ con 39 registros (con paginación): 21-26361795-6. Adjuntos: 21 A1 - 19 A2
+    # CUIJ con 39 registros (con paginación): 21-26361795-6. Adjuntos: 25 P1 - 22 P2 (47)
     # CUIJ con 10 registros (sin paginación): 21-26362099-9. Adjuntos: 5 A1 - 5 A2
     # CUIJ con 54 registros (con paginación): 21-05016495-8. Adjuntos: 36 A1 - 
-    textfieldCUIJ.send_keys("21-26361795-6")
+    textfieldCUIJ.send_keys("21-26362099-9")
     botonEfectuarBusqueda = encontrarElemento(driver, "efectuarBusqueda")
     botonEfectuarBusqueda.click()
     linkCUIJ = encontrarElemento(driver, "linkCUIJ")
@@ -240,85 +231,93 @@ def desplegarCuadroBusqueda(driver):
 # Argumentos: driver
 # Devuelve: -
 def extraerInformacion(driver):
-    print("Función extraer información (5)")
-    archivos = driver.find_elements_by_xpath('//i[@class ="color-verde fa-paperclip fas"]')
-    print ("SE DEBEN DESCARGAR ", len(archivos), " archivos.")
-    sleep(5)
-    filas = driver.find_elements_by_xpath("//table/tbody/tr")
+    #sleep(5)
+    filas = WebDriverWait(driver,30).until(EC.visibility_of_all_elements_located((By.XPATH, "//table/tbody/tr")))
+    # filas = driver.find_elements_by_xpath("//table/tbody/tr")
     numeroFilas = len(filas)
     leerInformacionExpediente(driver, numeroFilas)
-    pasarPagina(driver)
+    # pasarPagina(driver)
 
 # Toma la información correspondiente a los movimientos del expediente
 # Argumentos: driver, númerodeFilas (integer) -> calculado en la función “extraerInformación”
 # Devuelve: -
 def leerInformacionExpediente(driver, numeroFilas):
-    print("Trayendo información (5a)")
-    sleep(15)
-
-    # xpathBase = "//div[@class='table-responsive mt-2']//tbody/tr[i]"
-
+    #sleep(5)
+    print("Se han encontrado: ", numeroFilas, " filas")
     for i in range(1,numeroFilas+1):
-        print("Vuelta número: ", i)
+        print("Entra al for")
+        print ("Vuelta nro: ", i)
+        # try:
+        tipoMovimiento1 = WebDriverWait(driver, 15).until(
+            EC.visibility_of_element_located((By.XPATH, "//div[@class='table-responsive mt-2']//tbody/tr["+str(i)+"]//td[1]//i"))) 
+        tipoMovimiento1 = tipoMovimiento1.get_attribute('class')
+        # tipoMovimiento1 = driver.find_element(
+        #     By.XPATH, "//div[@class='table-responsive mt-2']//tbody/tr["+str(i)+"]//td[1]//i").get_attribute('class')
+        tipoMov1 = identificarMovimiento(tipoMovimiento1)
+        # except:
+        #     tipoMov1 = "sinMov1"
         try:
-            tipoMovimiento1 = driver.find_element(
-                # By.XPATH, "//div[@class='table-responsive mt-2']//tbody/tr["+str(numeroFilas)+"]//td[1]//i").get_attribute('class')
-                By.XPATH, "//div[@class='table-responsive mt-2']//tbody/tr["+str(i)+"]//td[1]//i").get_attribute('class')
-            tipoMov1 = identificarMovimiento(tipoMovimiento1)
-            print(tipoMov1)
-        except:
-            tipoMov1 = "sinMov1"
-        try:
-            tipoMovimiento2 = driver.find_element(
-                By.XPATH, "//div[@class='table-responsive mt-2']//tbody/tr["+str(i)+"]/td[2]//i").get_attribute('class')
-            #tipoMovimientoModif = identificarMovimiento(tipoMovimiento2)
+            tipoMovimiento2 = WebDriverWait(driver, 15).until(
+                EC.visibility_of_element_located((By.XPATH, "//div[@class='table-responsive mt-2']//tbody/tr["+str(i)+"]/td[2]//i"))) 
+
+            # tipoMovimiento2 = driver.find_element(
+            #     By.XPATH, "//div[@class='table-responsive mt-2']//tbody/tr["+str(i)+"]/td[2]//i").get_attribute('class')
+            tipoMovimiento2 = tipoMovimiento2.get_attribute('class')
             tipoMov2 = identificarMovimiento(tipoMovimiento2)
-            print(tipoMov2)
         except:
             tipoMov2 = "sinMov2"
         try:
-            fecha = driver.find_element(
-                By.XPATH, "//div[@class='table-responsive mt-2']//tbody/tr["+str(i)+"]/td[3]/span/span").text
-            print(fecha)
+            # fecha = driver.find_element(
+            #     By.XPATH, "//div[@class='table-responsive mt-2']//tbody/tr["+str(i)+"]/td[3]/span/span").text
+            fecha = WebDriverWait(driver, 10).until(
+                EC.visibility_of_element_located((By.XPATH, "//div[@class='table-responsive mt-2']//tbody/tr["+str(i)+"]/td[3]/span/span"))) 
+            fecha = fecha.text
         except:
             fecha = "sinFecha"
         try:
-            novedad = driver.find_element(
-                By.XPATH, "//div[@class='table-responsive mt-2']//tbody/tr["+str(i)+"]/td[4]/span/span").text
-            print(novedad)
+            # novedad = driver.find_element(
+            #     By.XPATH, "//div[@class='table-responsive mt-2']//tbody/tr["+str(i)+"]/td[4]/span/span").text
+            novedad = WebDriverWait(driver, 10).until(
+                EC.visibility_of_element_located((By.XPATH, "//div[@class='table-responsive mt-2']//tbody/tr["+str(i)+"]/td[4]/span/span"))) 
+            novedad = novedad.text
         except:
             novedad = "sinNovedad"
         try:
-            observacion = driver.find_element(
-                By.XPATH, "//div[@class='table-responsive mt-2']//tbody/tr["+str(i)+"]/td[5]/span/span").text
+            # observacion = driver.find_element(
+            #     By.XPATH, "//div[@class='table-responsive mt-2']//tbody/tr["+str(i)+"]/td[5]/span/span").text
+            observacion = WebDriverWait(driver, 10).until(
+                EC.visibility_of_element_located((By.XPATH, "//div[@class='table-responsive mt-2']//tbody/tr["+str(i)+"]/td[4]/span/span"))) 
+            observacion = observacion.text
             observacion = observacion.replace("\n", " // ")
-            print(observacion)
         except:
             observacion = "sinObservacion"
         try:
             scrollSuave(driver)
             scrollSuave(driver)
-            adjunto1 = driver.find_element(
-                By.XPATH, "//div[@class='table-responsive mt-2']//tbody/tr["+str(i)+"]/td[6]//button/i")
-            print("Descargando archivo 1")
+            # adjunto1 = driver.find_element(
+            #     By.XPATH, "//div[@class='table-responsive mt-2']//tbody/tr["+str(i)+"]/td[6]//button/i")
+            adjunto1 = WebDriverWait(driver, 30).until(
+                EC.element_to_be_clickable(
+                    (By.XPATH, "//div[@class='table-responsive mt-2']//tbody/tr["+str(i)+"]/td[6]//button/i"))
+                    )    
             adjunto1.click()
-            sleep(5)
+            #sleep(5)
         except:
-            print("NO SE HA ENCONTRADO EL ADJUNTO 1")
             pass
         try:
             scrollSuave(driver)
             scrollSuave(driver)
-            adjunto2 = driver.find_element(
-                By.XPATH, "//div[@class='table-responsive mt-2']//tbody/tr["+str(i)+"]/td[8]//button/i")
-            print("Descargando archivo 2")
+            # adjunto2 = driver.find_element(
+            #     By.XPATH, "//div[@class='table-responsive mt-2']//tbody/tr["+str(i)+"]/td[8]//button/i")
+            adjunto2 = WebDriverWait(driver, 30).until(
+                EC.element_to_be_clickable(
+                    (By.XPATH, "//div[@class='table-responsive mt-2']//tbody/tr["+str(i)+"]/td[8]//button/i"))
+                    )    
             adjunto2.click()
-            sleep(5)
+            #sleep(3)
             
             textoYfechaAdjunto = navegar(driver)
-            print(textoYfechaAdjunto)
         except:
-            print("NO SE HA ENCONTRADO EL ADJUNTO 2")
             pass
         guardarInformacion(tipoMov1, tipoMov2, fecha, novedad, observacion)
 
@@ -326,55 +325,43 @@ def leerInformacionExpediente(driver, numeroFilas):
 # Argumentos: driver
 # Devuelve: -
 def pasarPagina(driver):
-    print("Pasando página (5b)")
     scrollSuave(driver)
+    #sleep(5)
     try:
         botonPasarPagina = encontrarElemento(driver, "botonPasarPagina")
         claseBotonPasarPagina = botonPasarPagina.get_attribute('class')
         claseSinEspacios = claseBotonPasarPagina.strip()
 
         claseEsperada = "page-item next-item enabled"
-
-        print("La clase encontrada es: ", claseBotonPasarPagina, "con longitud ",len(claseBotonPasarPagina))
-        print("La clase esperada era: ", claseEsperada, "con longitud: ", len(claseEsperada)  )
+        print("La clase encontrada es: ", claseSinEspacios,"con longitud :", len(claseSinEspacios))
+        print("La clase esperada es: ", claseEsperada, "con longitud :", len(claseEsperada))
         if (claseSinEspacios == claseEsperada):
-            print("COINCIDEN PERO TODAVÍA NO SE HIZO CLICK")
+            msgbox('Acepte para pasar a la siguiente página.')
             botonPasarPagina.click()
-            sleep(5)
+            #sleep(5)
             extraerInformacion(driver)
     except:
-        print("NO se ha encontrado otra página.")
+        print("No se ha encontrado otra página.")
         pass
 
 # Utiliza la lista de referencias para interpretar el ícono encontrado
 # Argumentos: movimiento (string) -> generado por la función "leerInformacionExpediente"
 # Devuelve: mov (string) -> el resultado de la interpretación del ícono
 def identificarMovimiento(movimiento):
-    print("Identificando movimiento. Clase: ",movimiento)
-    print("El movimiento es de tipo: ",type(movimiento)) 
     result1 = movimiento.find("file")
     result2 = movimiento.find("gavel")
     result3 = movimiento.find("shield")
     result4 = movimiento.find("user-check")
-    print(result1)
-    print(result2)
-    print(result3)
-    print(result4)
 
     encontrado = 15
 
     if (result1 == encontrado):
-        #print("Entra al primer IF")
         mov = "Escrito"
-        print("Este movimiento es de tipo: ", type(mov))
     if (result2 == encontrado):
-        #print("Entra al segundo IF")
         mov = "Resolución/Sentencia"
     if (result3 == encontrado):
-        #print("Entra al tercer IF")
         mov = "Trámite"
     if (result4 == encontrado):
-        #print("Entra al cuarto IF")
         mov = "Notificaciones con firma digital"
     return mov
 
@@ -382,13 +369,11 @@ def identificarMovimiento(movimiento):
 # Argumentos: tipoMov1, tipoMov2, fecha, novedad, observacion -> generados por la función "leerInformacionExpediente"
 # Devuelve: -
 def guardarInformacion(tipoMov1, tipoMov2, fecha, novedad, observacion):
-    print("Guardando información (5c)")
     with open('datosExtraidos.csv', 'a', newline='') as f:
         writer = csv.writer(f, delimiter = ',', lineterminator='\n')
         writer.writerow([tipoMov1, tipoMov2, fecha, novedad, observacion])
 
 def scroll(driver):
-    print("scrolleando")
     driver.execute_script("window.scrollTo(0, document.body.scrollHeight)")
 
 def scrollSuave(driver):
@@ -401,5 +386,17 @@ def scrollArriba(driver):
 #     element.scrollIntoView({block: "end"});
 
 def contarArchivosADescargar(driver):
-    archivos = driver.find_elements_by_xpath('//i[@class ="color-verde fa-paperclip fas"]')
+    # archivos = driver.find_elements_by_xpath('//i[@class ="color-verde fa-paperclip fas"]')
+    # archivos = driver.find_elements_by_class_name('color-verde fa-paperclip fas')
+    archivos = WebDriverWait(driver, 10).until(EC.visibility_of_all_elements_located((By.XPATH, '//i[@class ="color-verde fa-paperclip fas"]'))) 
     print ("SE DEBEN DESCARGAR ", len(archivos), " archivos.")
+
+def contarArchivosDescargados():
+    img_folder_path = r"C:\Users\pasros01\Downloads"
+    dirListing = os.listdir(img_folder_path)
+    print("--------Estos son los archivos descargados: ")
+    dirListing.remove('desktop.ini')
+    for file in dirListing:
+        print(file)
+    print("*************La cantidad de archivos descargados es: ", len(dirListing))
+    
